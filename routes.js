@@ -1,53 +1,6 @@
 const express = require("express")
 const connect = require("./database")
 const router = express.Router();
-const getLogData = async (Logs, batchNum,length) => {
-    const MaxBatches = Math.ceil(length / 10) -1
-    if (batchNum > MaxBatches){
-        console.log('Reached Maxed amount of batches')
-        return [false, 'Reached Maxed amount of batches']
-    }
-    let lengthOf = 10;
-
-    if (length < 10) {
-        lengthOf = length;
-    }
-    let index = 0;
-    let ifBatches = true;
-
-    try{
-        let batch = [];
-        if(batchNum == MaxBatches){
-            ifBatches = false
-        }
-        
-        for(let i = 0; i < batchNum; i++){
-            index += 10
-            lengthOf += 10
-        }
-        for(let n = index; n < lengthOf;n++){
-            let items = {}
-            const data = await new Promise((resolve, reject)=>{
-                connect.query("SELECT * FROM logData WHERE logId = (?)", [Logs[n].logId],(err,data)=>{
-                    if(err){
-                        console.log(err)
-                      reject(err)
-                        
-                    }else{
-                        console.log('got data')
-                      resolve(data)
-                    }})})
-                items = {logName:Logs[n].logName,logId:Logs[n].logId,data:data}
-                batch.push(items)
-                
-        }
-        return [batch,ifBatches]   //batchesLeft:ifBatches
-    }catch(err){
-        console.log(err)
-        return [false,'Error getting log data']
-    } 
-}
-
 router.get("/", function(req,res){
     res.json({
         status: 1,
