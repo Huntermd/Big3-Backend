@@ -11,6 +11,8 @@ router.get("/", function(req,res){
 router.get("/workout-logs/:id",   (req,res) => {
     let userId = req.params.id
     // let batchNum = req.body.batchNum
+    console.log(typeof userId)
+    console.log(req)
     
     connect.query("SELECT * FROM workoutLogs WHERE userId = (?) ORDER BY lastOpened DESC", [userId],(err,data)=>{
         if(err){
@@ -33,6 +35,7 @@ router.get("/workout-logs/:id",   (req,res) => {
 
 router.put("/update-timestamp/:id",(req,res)=>{
     let logId = req.params.id
+    console.log(typeof logId)
     connect.query("UPDATE workoutLogs SET lastOpened = CURRENT_TIMESTAMP WHERE logId = (?)",[logId],(err,data)=>{
             if(err){
                 res.json({
@@ -50,10 +53,12 @@ router.put("/update-timestamp/:id",(req,res)=>{
 
 router.get('/get-logdata/:id',(req,res) =>{
     let logId = req.params.id
+    
 
 
-    connect.query('SELECT * FROM logData WHERE = (?)', [logId], (err,data)=>{
+    connect.query('SELECT * FROM logData WHERE logId = (?) ORDER BY idx', [logId], (err,data)=>{
         if(err){
+            console.log(err)
             res.json({
                 status: false,
                 message:'error getting log data'
@@ -95,7 +100,6 @@ router.post('/add-logdata/:id',(req,res) =>{
 
 router.put('/update-single-logdata/:id',(req,res)=>{
     let movementId = req.params.id
-    console.log(movementId)
     let exerciseName = req.body.exerciseName
     let weight = req.body.weight
     let sets = req.body.sets
@@ -164,20 +168,27 @@ router.post('/add-log/:id',(req,res)=>{
                 message:'failed to add new log'
             })
         }else{
-            connect.query("SELECT * FROM workoutLogs WHERE userId = (?) ORDER BY lastOpened DESC",[userId],(err,data) =>{
-                if(err){
-                    console.log(err)
-                    res.json({
-                        status:false,
-                        message:'failed to get logs'
-                    })
-                }else{
-                    res.json({
-                        status:true,
-                        message: 'success created log and getting log',
-                        data:data[0]
-                    })
-                }
+                res.json({
+                    status:true,
+                    message: 'success creating new log'
+                })
+        }
+    })
+})
+
+router.put('/update-single-log/:id',(req,res)=>{
+    let logId = req.params.id
+    let logName = req.body.logName
+    connect.query('UPDATE workoutLogs SET logName=(?) WHERE logId = (?)',[logName,logId],(err,data)=>{
+        if(err){
+            res.json({
+                status:false,
+                message:'error updating workout log'
+            })
+        }else{
+            res.json({
+                status:true,
+                message: 'success updating  workout log'
             })
         }
     })
